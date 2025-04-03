@@ -5,7 +5,6 @@ export function useWindowEvent<Key extends keyof WindowEventMap>(
   fn: (ev: WindowEventMap[Key]) => void,
 ) {
   useEffect(() => {
-    console.count("useEffect");
     const handle = (ev: WindowEventMap[Key]) => fn(ev);
 
     window.addEventListener(event, handle);

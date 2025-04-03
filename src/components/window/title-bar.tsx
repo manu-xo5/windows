@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { forwardRef } from "react";
 import { useWindowStore } from "./context";
 import { useWindowManagerStore } from "../window-manager/context";
+import { flushSync } from "react-dom";
 
 type Props = {
   children?: React.ReactNode;
@@ -42,9 +43,28 @@ export const TitleBar = forwardRef<HTMLDivElement, Props>(function TitleBar(
     >
       <p className="pl-4">{children}</p>
       <div className="flex">
-        <Button onClick={() => minimize()}>&minus;</Button>
+        <Button
+          onClick={() => {
+            document.startViewTransition(() => {
+              flushSync(() => {
+                minimize();
+              });
+            });
+          }}
+        >
+          &minus;
+        </Button>
         <Button>&#x1F5D6;</Button>
-        <Button className="text-2xl" onClick={() => close(windowId)}>
+        <Button
+          className="text-2xl"
+          onClick={() => {
+            document.startViewTransition(() => {
+              flushSync(() => {
+                close(windowId);
+              });
+            });
+          }}
+        >
           &times;
         </Button>
       </div>

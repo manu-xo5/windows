@@ -26,9 +26,11 @@ export const useWindowManagerStore = create<WindowManagerStore>()(
       stores.set(newId, createWindowStore(newId));
       renderPropMap.set(newId, renderProp);
 
-      set({
-        ids: [...get().ids, newId],
-        storeMap: new Map(stores),
+      document.startViewTransition(() => {
+        set({
+          ids: [...get().ids, newId],
+          storeMap: new Map(stores),
+        });
       });
     },
 

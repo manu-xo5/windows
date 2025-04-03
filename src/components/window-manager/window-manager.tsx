@@ -2,6 +2,7 @@ import { FileExplorer } from "@/components/file-explorer";
 import { Window, WindowStoreProvider } from "@/components/window";
 import { useWindowManagerStore } from "./context";
 import { FileIcon, FolderClosedIcon } from "lucide-react";
+import { Taskbar } from "../task-bar";
 
 const TempIconComp: React.FC<{
   icon: React.ReactNode;
@@ -34,6 +35,7 @@ export function WindowManager() {
           {renderPropMap.get(id)?.()}
         </WindowStoreProvider>
       ))}
+      <Taskbar />
 
       <TempIconComp
         icon={<FileIcon size={32} />}
