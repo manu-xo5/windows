@@ -1,15 +1,14 @@
 import { useEffect } from "react";
-import { useStableCallback } from "./use-stable-callback";
 
 export function useWindowEvent<Key extends keyof WindowEventMap>(
   event: Key,
   fn: (ev: WindowEventMap[Key]) => void,
 ) {
-  const fnRef = useStableCallback(fn);
-
   useEffect(() => {
-    const handle = (ev: WindowEventMap[Key]) => fnRef.current(ev);
+    console.count("useEffect");
+    const handle = (ev: WindowEventMap[Key]) => fn(ev);
 
     window.addEventListener(event, handle);
-  }, [event, fnRef]);
+    return () => window.removeEventListener(event, handle);
+  }, [event, fn]);
 }

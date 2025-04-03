@@ -1,20 +1,25 @@
 import { useEffect } from "react";
-import { useStableCallback } from "./use-stable-callback";
-import { noop } from "@/lib/utils";
 
 const MouseButton = {
   LEFT: 0,
   RIGHT: 1,
 } as const;
 
+export type Coords = {
+  x: number;
+  y: number;
+};
+
 type DefaultCtx = {
   cancel(): void;
 };
 
+export type OnPressHandler<Ctx> = (mouse: Coords, ctx: Ctx & DefaultCtx) => void;
+export type OnDragHandler<Ctx> = (mouse: Coords, ctx: Ctx & DefaultCtx) => void;
 type UseMouseMoveArg<Ctx, Ref> = {
   clickTargetRef: React.RefObject<Ref | null>;
-  onPress?(mouse: { x: number; y: number }, ctx: Ctx & DefaultCtx): void;
-  onDrag?(mouse: { x: number; y: number }, ctx: Ctx & DefaultCtx): void;
+  onPress?: OnPressHandler<Ctx>;
+  onDrag?: OnDragHandler<Ctx>;
 };
 
 export function useMouseMove<Ctx, Ref extends HTMLElement>({
@@ -22,9 +27,6 @@ export function useMouseMove<Ctx, Ref extends HTMLElement>({
   onPress,
   onDrag,
 }: UseMouseMoveArg<Ctx, Ref>) {
-  const onPressRef = useStableCallback(onPress ?? noop);
-  const onDragRef = useStableCallback(onDrag ?? noop);
-
   useEffect(() => {
     let leftMouse = false;
     let ignore = false;
@@ -51,7 +53,7 @@ export function useMouseMove<Ctx, Ref extends HTMLElement>({
       };
 
       leftMouse = true;
-      onPressRef.current(mouse, ctx);
+      onPress?.(mouse, ctx);
     }
 
     // call `onDrag` handler
@@ -61,7 +63,7 @@ export function useMouseMove<Ctx, Ref extends HTMLElement>({
         x: ev.clientX,
         y: ev.clientY,
       };
-      onDragRef.current(mouse, ctx);
+      onDrag?.(mouse, ctx);
     }
 
     // reset state
@@ -79,5 +81,5 @@ export function useMouseMove<Ctx, Ref extends HTMLElement>({
       window.removeEventListener("mouseup", handleMouseUp);
       window.removeEventListener("mousemove", handleMouseMove);
     };
-  }, [onPressRef, onDragRef, clickTargetRef]);
+  }, [onPress, onDrag, clickTargetRef]);
 }

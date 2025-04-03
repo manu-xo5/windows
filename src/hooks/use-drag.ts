@@ -1,10 +1,16 @@
 import { RESIZEABLE_BORDER } from "@/constants";
-import { useMouseMove } from "./use-mouse-move";
+import { useCallback } from "react";
+import {
+  OnDragHandler,
+  OnPressHandler,
+  useMouseMove
+} from "./use-mouse-move";
 
 type UseDragArg<T> = {
   anchorRef: React.RefObject<T | null>;
   targetRef: React.RefObject<T | null>;
 };
+type Ctx = { offsetX: number; offsetY: number };
 
 function isOnDraggableArea<T extends HTMLElement>(
   mouse: { x: number; y: number },
@@ -26,9 +32,8 @@ export function useDrag<T extends HTMLElement>({
   anchorRef,
   targetRef,
 }: UseDragArg<T>) {
-  useMouseMove<{ offsetX: number; offsetY: number }, T>({
-    clickTargetRef: anchorRef,
-    onPress: (mouse, ctx) => {
+  const handlePress: OnPressHandler<Ctx> = useCallback(
+    (mouse, ctx) => {
       if (!anchorRef.current) return;
 
       if (!isOnDraggableArea(mouse, anchorRef.current)) {
@@ -39,10 +44,21 @@ export function useDrag<T extends HTMLElement>({
       ctx.offsetX = mouse.x - anchorRect.x;
       ctx.offsetY = mouse.y - anchorRect.y;
     },
-    onDrag: (mouse, ctx) => {
+    [anchorRef],
+  );
+
+  const handleDrag: OnDragHandler<Ctx> = useCallback(
+    (mouse, ctx) => {
       if (!targetRef.current) return;
       targetRef.current.style.left = mouse.x - ctx.offsetX + "px";
       targetRef.current.style.top = mouse.y - ctx.offsetY + "px";
     },
+    [targetRef],
+  );
+
+  useMouseMove<Ctx, T>({
+    clickTargetRef: anchorRef,
+    onPress: handlePress,
+    onDrag: handleDrag,
   });
 }

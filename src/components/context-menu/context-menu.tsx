@@ -1,14 +1,14 @@
 import { useWindowEvent } from "@/hooks/use-window-event";
 import { cn } from "@/lib/utils";
-import { useReducer, useRef } from "react";
+import { useCallback, useReducer, useRef } from "react";
 import { createPortal } from "react-dom";
 import { ContextMenuContext } from "./context";
 
-type State = { open: boolean; renderFn: () => React.ReactNode };
-function reducer(
-  state: State,
-  action: { type: "open"; renderFn: () => React.ReactNode } | { type: "close" },
-): State {
+export type State = { open: boolean; renderFn: () => React.ReactNode };
+export type Action =
+  | { type: "open"; renderFn: () => React.ReactNode }
+  | { type: "close" };
+function reducer(state: State, action: Action): State {
   if (action.type === "open") {
     return {
       open: true,
@@ -31,19 +31,11 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({
     renderFn: () => <></>,
   });
 
-  const handleOpenContextMenu = (fn: () => React.ReactNode) => {
-    dispatch({ type: "open", renderFn: fn });
-  };
-
-  const handleClose = () => {
-    dispatch({ type: "close" });
-  };
-
   return (
-    <ContextMenuContext.Provider value={handleOpenContextMenu}>
+    <ContextMenuContext.Provider value={dispatch}>
       {children}
       {createPortal(
-        <ContextMenu onClose={handleClose} open={open}>
+        <ContextMenu dispatch={dispatch} open={open}>
           {renderFn()}
         </ContextMenu>,
         document.getElementById("context-menu")!,
@@ -54,23 +46,28 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({
 
 export const ContextMenu: React.FC<{
   open: boolean;
-  onClose(): void;
+  dispatch: React.ActionDispatch<[action: Action]>;
   children: React.ReactNode;
-}> = ({ open, onClose, children }) => {
+}> = ({ open, children, dispatch }) => {
   const nodeRef = useRef<HTMLDivElement>(null);
   const mouseCoords = useRef({ x: 0, y: 0 });
 
-  useWindowEvent("mousedown", (ev) => {
-    mouseCoords.current = {
-      x: ev.clientX,
-      y: ev.clientY,
-    };
+  const handleMouseMove = useCallback(
+    (ev: MouseEvent) => {
+      mouseCoords.current = {
+        x: ev.clientX,
+        y: ev.clientY,
+      };
 
-    if (ev.target === nodeRef.current) return;
-    if (nodeRef.current?.contains(ev.target as HTMLElement)) return;
+      if (ev.target === nodeRef.current) return;
+      if (nodeRef.current?.contains(ev.target as HTMLElement)) return;
 
-    onClose();
-  });
+      dispatch({ type: "close" });
+    },
+    [dispatch],
+  );
+
+  useWindowEvent("mousedown", handleMouseMove);
 
   return (
     open && (

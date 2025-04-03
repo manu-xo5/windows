@@ -37,14 +37,17 @@ export function Window({ children, title }: Props) {
         className="h-96 bg-black border border-t-none border-accenu"
         onContextMenu={(ev) => {
           ev.preventDefault();
-          handleOpenContextMenu(() => (
-            <>
-              <ContextMenuItem>Profile</ContextMenuItem>
-              <ContextMenuItem>Billing</ContextMenuItem>
-              <ContextMenuItem>Team</ContextMenuItem>
-              <ContextMenuItem>Subscription</ContextMenuItem>
-            </>
-          ));
+          handleOpenContextMenu({
+            type: "open",
+            renderFn: () => (
+              <>
+                <ContextMenuItem>Profile</ContextMenuItem>
+                <ContextMenuItem>Billing</ContextMenuItem>
+                <ContextMenuItem>Team</ContextMenuItem>
+                <ContextMenuItem>Subscription</ContextMenuItem>
+              </>
+            ),
+          });
         }}
       >
         {children}
