@@ -3,6 +3,7 @@ import { useResize } from "@/hooks/use-resize";
 import { useRef } from "react";
 import { useWindowStore } from "./context";
 import { TitleBar } from "./title-bar";
+import { ContextMenuItem, useContextMenu } from "@/components/context-menu";
 
 type Props = {
   title: string;
@@ -12,6 +13,7 @@ export function Window({ children, title }: Props) {
   const titleNodeRef = useRef<HTMLDivElement>(null);
   const windowNodeRef = useRef<HTMLDivElement>(null);
   const state = useWindowStore((s) => s.state);
+  const handleOpenContextMenu = useContextMenu();
   void state;
 
   useDrag({
@@ -22,11 +24,35 @@ export function Window({ children, title }: Props) {
   useResize({ targetRef: windowNodeRef });
 
   return (
-    <div className="absolute" ref={windowNodeRef}>
+    <div
+      className="absolute"
+      ref={windowNodeRef}
+      onContextMenu={(ev) => {
+        ev.preventDefault();
+      }}
+    >
       <TitleBar ref={titleNodeRef}>{title}</TitleBar>
-      <div className="h-96 bg-black border border-t-none border-accenu">
+
+      <div
+        className="h-96 bg-black border border-t-none border-accenu"
+        onContextMenu={(ev) => {
+          ev.preventDefault();
+          handleOpenContextMenu(() => (
+            <>
+              <ContextMenuItem>Profile</ContextMenuItem>
+              <ContextMenuItem>Billing</ContextMenuItem>
+              <ContextMenuItem>Team</ContextMenuItem>
+              <ContextMenuItem>Subscription</ContextMenuItem>
+            </>
+          ));
+        }}
+      >
         {children}
       </div>
+
+      <></>
     </div>
   );
 }
+
+//<RightClickMenu open={showMenu} onClose={() => setShowMenu(false)} />
