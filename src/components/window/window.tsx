@@ -4,10 +4,15 @@ import { useRef } from "react";
 import { useWindowStore } from "./context";
 import { TitleBar } from "./title-bar";
 
-export function Window() {
+type Props = {
+  title: string;
+  children?: React.ReactNode;
+};
+export function Window({ children, title }: Props) {
   const titleNodeRef = useRef<HTMLDivElement>(null);
   const windowNodeRef = useRef<HTMLDivElement>(null);
   const state = useWindowStore((s) => s.state);
+  void state;
 
   useDrag({
     anchorRef: titleNodeRef,
@@ -18,8 +23,10 @@ export function Window() {
 
   return (
     <div className="absolute" ref={windowNodeRef}>
-      <TitleBar ref={titleNodeRef}>File Explorer: [{state}]</TitleBar>
-      <div className="h-96 bg-black border border-t-none border-accenu" />
+      <TitleBar ref={titleNodeRef}>{title}</TitleBar>
+      <div className="h-96 bg-black border border-t-none border-accenu">
+        {children}
+      </div>
     </div>
   );
 }

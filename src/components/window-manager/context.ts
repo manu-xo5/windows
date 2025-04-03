@@ -1,42 +1,45 @@
 import { createWindowStore, WindowStore } from "@/components/window";
+import { generateUniqueId } from "@/lib/utils";
+import React from "react";
 import { create, StoreApi } from "zustand";
 
 export type Id = string;
 type WindowManagerStore = {
   ids: Id[];
-  stores: Map<Id, StoreApi<WindowStore>>;
+  storeMap: Map<Id, StoreApi<WindowStore>>;
+  renderPropMap: Map<Id, () => React.ReactNode>;
 
-  addWindow(): void;
+  addWindow(renderProp: () => React.ReactNode): void;
   closeWindow(id: Id): void;
 };
 export const useWindowManagerStore = create<WindowManagerStore>()(
   (set, get) => ({
     ids: [],
-    stores: new Map(),
+    storeMap: new Map(),
+    renderPropMap: new Map(),
 
-    addWindow() {
-      let id = Math.random().toString().substring(2);
-      while (get().ids.includes(id)) {
-        id = Math.random().toString().substring(2);
-      }
-      const stores = get().stores;
+    addWindow(renderProp: () => React.ReactNode) {
+      const { renderPropMap, storeMap: stores, ids } = get();
 
-      stores.set(id, createWindowStore(id));
+      const newId: Id = generateUniqueId(ids);
+
+      stores.set(newId, createWindowStore(newId));
+      renderPropMap.set(newId, renderProp);
 
       set({
-        ids: [...get().ids, id],
-        stores: new Map(stores),
+        ids: [...get().ids, newId],
+        storeMap: new Map(stores),
       });
     },
 
     closeWindow(id: string) {
-      const stores = get().stores;
+      const stores = get().storeMap;
 
       stores.delete(id);
 
       set({
         ids: get().ids.filter((id_) => id_ !== id),
-        stores: new Map(stores),
+        storeMap: new Map(stores),
       });
     },
   }),

@@ -1,4 +1,4 @@
-import { RESIZEABLE_BORDER } from "@/constands";
+import { RESIZEABLE_BORDER } from "@/constants";
 import { useMouseMove } from "./use-mouse-move";
 import { useStableCallback } from "./use-stable-callback";
 import { noop } from "@/lib/utils";
