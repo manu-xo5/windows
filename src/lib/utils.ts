@@ -6,11 +6,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function generateUniqueId(existingIds: string[]) {
-  let id = Math.random().toString().substring(2);
-  while (existingIds.includes(id)) {
-    id = Math.random().toString().substring(2);
-  }
-
+  let id;
+  do {
+    id = `id_${Math.random().toString(36).substring(2, 9)}`;
+  } while (existingIds.includes(id));
   return id;
 }
 

@@ -1,3 +1,4 @@
+import { TASKBAR_HEIGHT } from "@/constants";
 import { useWindowManagerStore } from "../window-manager";
 
 const TempStartButton = () => {
@@ -43,6 +44,7 @@ export const Taskbar = () => {
     <div
       style={{
         viewTransitionName: "none",
+        height: TASKBAR_HEIGHT,
       }}
       className="py-1 absolute z-20 w-full bottom-0 flex items-center justify-center bg-secondary gap-6"
     >
@@ -59,10 +61,10 @@ export const Taskbar = () => {
             document.startViewTransition(() => {
               const winState = getWindowState(id).getState();
 
-              if (winState.state === "normal") {
-                winState.minimize();
+              if (winState.state === "minimized") {
+                winState.setState(winState.prevState);
               } else {
-                winState.restore();
+                winState.setState("minimized");
               }
             });
           }}

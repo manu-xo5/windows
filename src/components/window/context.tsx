@@ -4,27 +4,36 @@ import { Id } from "@/components/window-manager";
 
 // Store
 type WindowStoreState = {
+  meta: {
+    icon: string;
+  };
   id: Id;
-  state: "normal" | "minimized";
+  prevState: "normal" | "minimized" | "maximized";
+  state: "normal" | "minimized" | "maximized";
 };
 
 type WindowStoreAction = {
-  minimize(): void;
-  restore(): void;
+  setState(state: WindowStoreState["state"]): void;
 };
 
 export type WindowStore = WindowStoreState & WindowStoreAction;
 
+const defaultIconLocation =
+  "file-system/Program Files/window-manager/assets/common/icon";
+
 const initialWindowStore: Omit<WindowStoreState, "id"> = {
+  meta: {
+    icon: defaultIconLocation,
+  },
+  prevState: "normal",
   state: "normal",
 };
 
 export const createWindowStore = (windowId: Id) => {
-  return createStore<WindowStore>()((set) => ({
+  return createStore<WindowStore>()((set, get) => ({
     ...initialWindowStore,
     id: windowId,
-    minimize: () => set({ state: "minimized" }),
-    restore: () => set({ state: "normal" }),
+    setState: (state) => set({ prevState: get().state, state: state }),
   }));
 };
 

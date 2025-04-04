@@ -42,11 +42,11 @@ export function WindowManager() {
         title="Blank Window"
         onClick={() => addWindow(() => <Window title="Untitled Window" />)}
       />
-      {/*<TempIconComp
+      <TempIconComp
         icon={<FolderClosedIcon size={32} />}
         title="Blank Window"
         onClick={() => addWindow(() => <FileExplorer />)}
-      />*/}
+      />
     </>
   );
 }

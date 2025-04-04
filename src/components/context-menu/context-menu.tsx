@@ -2,7 +2,7 @@ import { useWindowEvent } from "@/hooks/use-window-event";
 import { cn } from "@/lib/utils";
 import { useCallback, useReducer, useRef } from "react";
 import { createPortal } from "react-dom";
-import { ContextMenuContext } from "./context";
+import { ContextMenuContext, useContextMenu } from "./context";
 
 export type State = { open: boolean; renderFn: () => React.ReactNode };
 export type Action =
@@ -52,7 +52,7 @@ export const ContextMenu: React.FC<{
   const nodeRef = useRef<HTMLDivElement>(null);
   const mouseCoords = useRef({ x: 0, y: 0 });
 
-  const handleMouseMove = useCallback(
+  const handleMouseDown = useCallback(
     (ev: MouseEvent) => {
       mouseCoords.current = {
         x: ev.clientX,
@@ -67,7 +67,7 @@ export const ContextMenu: React.FC<{
     [dispatch],
   );
 
-  useWindowEvent("mousedown", handleMouseMove);
+  useWindowEvent("mousedown", handleMouseDown);
 
   return (
     open && (
@@ -87,7 +87,9 @@ export const ContextMenu: React.FC<{
 
 export const ContextMenuItem: React.FC<
   React.ComponentPropsWithoutRef<"button">
-> = ({ className, ...props }) => {
+> = ({ className, onClick, ...props }) => {
+  const dispatchCtxMenu = useContextMenu();
+
   return (
     <button
       className={cn(
@@ -95,6 +97,12 @@ export const ContextMenuItem: React.FC<
         "[&_svg:not([class*='text-'])]:text-muted-foreground relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[inset]:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className,
       )}
+      onClick={(ev) => {
+        onClick?.(ev);
+        if (ev.isDefaultPrevented()) return;
+
+        dispatchCtxMenu({ type: "close" });
+      }}
       {...props}
     />
   );
