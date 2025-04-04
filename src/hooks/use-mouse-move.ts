@@ -10,7 +10,7 @@ export type Coords = {
   y: number;
 };
 
-export type Values = { mouse: Coords & { start: Coords } };
+export type Values = { mouse: Coords & { start: Coords }; cancel(): void };
 
 export type OnPressHandler<Ctx> = (value: Values, ctx: Ctx) => void;
 export type OnDragHandler<Ctx> = (value: Values, ctx: Ctx) => void;

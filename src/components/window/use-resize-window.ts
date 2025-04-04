@@ -1,5 +1,9 @@
 import { RESIZEABLE_BORDER } from "@/constants";
-import { OnDragHandler, OnPressHandler, useMouseMove } from "./use-mouse-move";
+import {
+  OnDragHandler,
+  OnPressHandler,
+  useMouseMove,
+} from "@/hooks/use-mouse-move";
 import { useCallback } from "react";
 
 type UseResizeArg<T> = {
@@ -36,11 +40,11 @@ function isOnResizeableArea<T extends HTMLElement>(
   return isOnLeftBorder || isOnRightBorder || isOnTopBorder || isOnBottomBorder;
 }
 
-export function useResize<T extends HTMLElement>({
+export function useResizeWindow<T extends HTMLElement>({
   targetRef: nodeRef,
 }: UseResizeArg<T>) {
   const handlePress: OnPressHandler<Ctx> = useCallback(
-    (mouse, ctx) => {
+    ({ mouse, cancel }, ctx) => {
       if (!nodeRef.current) return;
 
       const winRect = nodeRef.current.getBoundingClientRect();
@@ -49,14 +53,14 @@ export function useResize<T extends HTMLElement>({
       ctx.dwParity = mouse.x > winRect.x + winRect.width / 2 ? 1 : -1;
 
       if (!isOnResizeableArea(mouse, nodeRef.current)) {
-        ctx.cancel();
+        cancel();
       }
     },
     [nodeRef],
   );
 
   const handleDrag: OnDragHandler<Ctx> = useCallback(
-    (mouse, ctx) => {
+    ({ mouse }, ctx) => {
       if (!nodeRef.current) return;
       const dw = (mouse.x - ctx.mouseXInit) * ctx.dwParity;
       nodeRef.current.style.width = ctx.initWidth + dw + "px";

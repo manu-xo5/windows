@@ -1,5 +1,5 @@
 import { ContextMenuItem, useContextMenu } from "@/components/context-menu";
-import { useResize } from "@/hooks/use-resize";
+import { useResizeWindow } from "@/components/window/use-resize-window";
 import { cn } from "@/lib/utils";
 import { ChevronRightIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
@@ -28,7 +28,7 @@ export function Window({ children, title }: Props) {
     targetRef: windowNodeRef,
   });
 
-  useResize({ targetRef: windowNodeRef });
+  useResizeWindow({ targetRef: windowNodeRef });
 
   useEffect(() => {
     if (!windowNodeRef.current) return;
