@@ -1,13 +1,13 @@
 import { ContextMenuItem, useContextMenu } from "@/components/context-menu";
-import { useDrag } from "@/hooks/use-drag";
 import { useResize } from "@/hooks/use-resize";
 import { cn } from "@/lib/utils";
-import { useCallback, useEffect, useRef } from "react";
+import { ChevronRightIcon } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { flushSync } from "react-dom";
+import { useWindowManagerStore } from "../window-manager";
 import { useWindowStore } from "./context";
 import { TitleBar } from "./title-bar";
-import { ChevronRightIcon } from "lucide-react";
-import { useWindowManagerStore } from "../window-manager";
-import { flushSync } from "react-dom";
+import { useDragWindow } from "./use-drag-window";
 
 type Props = {
   title: string;
@@ -18,18 +18,14 @@ export function Window({ children, title }: Props) {
   const windowNodeRef = useRef<HTMLDivElement>(null);
   const windowId = useWindowStore((s) => s.id);
   const state = useWindowStore((s) => s.state);
+
   const setState = useWindowStore((s) => s.setState);
   const close = useWindowManagerStore((s) => s.closeWindow);
-
   const dispatchCtxMenu = useContextMenu();
-  const handleDrag = useCallback(() => {
-    setState("normal");
-  }, [setState]);
 
-  useDrag({
+  useDragWindow({
     anchorRef: titleNodeRef,
     targetRef: windowNodeRef,
-    onDrag: handleDrag,
   });
 
   useResize({ targetRef: windowNodeRef });

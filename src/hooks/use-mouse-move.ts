@@ -10,12 +10,11 @@ export type Coords = {
   y: number;
 };
 
-type DefaultCtx = {
-  cancel(): void;
-};
+export type Values = { mouse: Coords & { start: Coords } };
 
-export type OnPressHandler<Ctx> = (mouse: Coords, ctx: Ctx & DefaultCtx) => void;
-export type OnDragHandler<Ctx> = (mouse: Coords, ctx: Ctx & DefaultCtx) => void;
+export type OnPressHandler<Ctx> = (value: Values, ctx: Ctx) => void;
+export type OnDragHandler<Ctx> = (value: Values, ctx: Ctx) => void;
+
 type UseMouseMoveArg<Ctx, Ref> = {
   clickTargetRef: React.RefObject<Ref | null>;
   onPress?: OnPressHandler<Ctx>;
@@ -30,11 +29,11 @@ export function useMouseMove<Ctx, Ref extends HTMLElement>({
   useEffect(() => {
     let leftMouse = false;
     let ignore = false;
-    const ctx = {
-      cancel: () => {
-        ignore = true;
-      },
-    } as Ctx & DefaultCtx;
+    const mouseStart: Coords = {
+      x: 0,
+      y: 0,
+    };
+    const ctx = {} as Ctx;
 
     // start drag only if mouse cursor
     // on specific `nodeRef.current` element
@@ -47,23 +46,42 @@ export function useMouseMove<Ctx, Ref extends HTMLElement>({
         return;
       if (ev.button !== MouseButton.LEFT) return;
 
-      const mouse = {
+      leftMouse = true;
+
+      mouseStart.x = ev.clientX;
+      mouseStart.y = ev.clientY;
+      const mouseData = {
         x: ev.clientX,
         y: ev.clientY,
+        start: mouseStart,
+      };
+      const values = {
+        mouse: mouseData,
+        cancel: () => {
+          ignore = true;
+        },
       };
 
-      leftMouse = true;
-      onPress?.(mouse, ctx);
+      onPress?.(values, ctx);
     }
 
     // call `onDrag` handler
     function handleMouseMove(ev: MouseEvent) {
       if (!leftMouse || ignore) return;
-      const mouse = {
+
+      const mouseData = {
         x: ev.clientX,
         y: ev.clientY,
+        start: mouseStart,
       };
-      onDrag?.(mouse, ctx);
+      const values = {
+        mouse: mouseData,
+        cancel: () => {
+          ignore = true;
+        },
+      };
+
+      onDrag?.(values, ctx);
     }
 
     // reset state
