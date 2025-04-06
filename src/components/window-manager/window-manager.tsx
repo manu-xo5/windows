@@ -1,18 +1,13 @@
+import { ContextMenuItem } from "@/components/context-menu";
 import { FileExplorer } from "@/components/file-explorer";
+import { Icons } from "@/components/icons";
 import { Window } from "@/components/window";
 import { useAtomValue, useSetAtom } from "jotai";
-import { FileIcon, FolderClosedIcon, HomeIcon } from "lucide-react";
+import { FileIcon, FolderClosedIcon } from "lucide-react";
 import { Fragment } from "react";
+import { openMenuAtom } from "../context-menu/atoms";
 import { Taskbar } from "../task-bar";
-import {
-  addWindowAtom,
-  closeWindowAtom,
-  renderFnWeakMap,
-  windowIdsAtom,
-} from "./atoms";
-import { setup } from "./setup";
-
-setup();
+import { addWindowAtom, renderFnWeakMap, windowIdsAtom } from "./atoms";
 
 const TempIconComp: React.FC<{
   icon: React.ReactNode;
@@ -35,37 +30,51 @@ const TempIconComp: React.FC<{
 export function WindowManager() {
   const ids = useAtomValue(windowIdsAtom);
   const addWindow = useSetAtom(addWindowAtom);
-  const closeWindow = useSetAtom(closeWindowAtom);
+  const openContextMenu = useSetAtom(openMenuAtom);
 
   return (
     <>
-      {ids.map((id) => {
-        const renderProp = renderFnWeakMap.get(id);
-        return <Fragment key={id.id}>{renderProp?.(id)}</Fragment>;
-      })}
-      <Taskbar />
+      <div
+        style={{
+          backgroundImage: `url(/assets/Users/Default/Pictures/wallpaper.png)`,
+        }}
+        className="bg-black w-screen h-screen"
+        onContextMenu={(ev) => {
+          ev.preventDefault();
 
-      <TempIconComp
-        icon={<HomeIcon size={32} />}
-        title="Close"
-        onClick={() => ids[0] && closeWindow(ids[0])}
-      />
+          const menu = (
+            <>
+              <ContextMenuItem>
+                <Icons.refresh /> Refresh
+              </ContextMenuItem>
+            </>
+          );
+          openContextMenu(() => menu);
+        }}
+      >
+        <TempIconComp
+          icon={<FileIcon size={32} />}
+          title="Blank Window"
+          onClick={() =>
+            addWindow((windowId) => (
+              <Window windowId={windowId} title="Untitled Window" />
+            ))
+          }
+        />
 
-      <TempIconComp
-        icon={<FileIcon size={32} />}
-        title="Blank Window"
-        onClick={() =>
-          addWindow((windowId) => (
-            <Window windowId={windowId} title="Untitled Window" />
-          ))
-        }
-      />
+        <TempIconComp
+          icon={<FolderClosedIcon size={32} />}
+          title="Blank Window"
+          onClick={() => addWindow((id) => <FileExplorer windowId={id} />)}
+        />
 
-      <TempIconComp
-        icon={<FolderClosedIcon size={32} />}
-        title="Blank Window"
-        onClick={() => addWindow((id) => <FileExplorer windowId={id} />)}
-      />
+        <Taskbar />
+
+        {ids.map((id) => {
+          const renderProp = renderFnWeakMap.get(id);
+          return <Fragment key={id.id}>{renderProp?.(id)}</Fragment>;
+        })}
+      </div>
     </>
   );
 }

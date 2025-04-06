@@ -45,7 +45,7 @@ export function Window({ children, title, windowId }: Props) {
   return (
     <div
       style={{
-        viewTransitionName: "window_" + windowId,
+        viewTransitionName: "window_" + windowId.id,
       }}
       className={cn(
         "absolute z-10 flex flex-col",

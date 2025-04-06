@@ -1,12 +1,13 @@
+import { createPathFolder } from "@/lib/file-system-helper";
 import { readFile } from "@/lib/utils";
 
-const hasInitailised = false;
+let hasInitailised = false;
 export async function setup() {
-  document.body.style.backgroundImage = `url(/assets/Users/Default/Pictures/wallpaper.png)`;
+  if (hasInitailised === true) return;
+  hasInitailised = true;
 
-  //if (hasInitailised === true) return;
-  //const picturesFolderId = createNestedFolders("/Users/Default/Pictures");
-  //const picturesFolder = DISK[picturesFolderId];
+  document.body.style.backgroundImage = `url(/assets/Users/Default/Pictures/wallpaper.png)`;
+  const picturesFolder = createPathFolder("/Users/Default/Pictures");
   //
   //const wallpaper = FileSystemItem.create(FSFile, {
   //  name: "wallpaper.png",
