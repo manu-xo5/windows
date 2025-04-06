@@ -1,29 +1,30 @@
 import { ContextMenuItem, useContextMenu } from "@/components/context-menu";
 import { Window } from "@/components/window";
-import { BaseFolderId, DISK, Folder, FSFile } from "@/lib/file-system";
 import { FileIcon, FolderClosedIcon } from "lucide-react";
-import { useWindowManagerStore } from "../window-manager";
+import { useSetAtom } from "jotai";
+import { addWindowAtom } from "../window-manager/atoms";
 
 type Props = {
-  itemId: BaseFolderId;
-  onOpenFolder(itemId: BaseFolderId): void;
+  itemId: string;
+  onOpenFolder(itemId: "string"): void;
 };
 export const FileView: React.FC<Props> = ({ itemId, onOpenFolder }) => {
   return (
     <div className="grid grid-cols-4 gap-4 p-4">
-      {DISK[itemId]?.listDirectory().map((item) =>
-        Folder.isFolder(item) ? (
-          <FolderFile
-            key={item.id}
-            title={item.name}
-            onClick={() => {
-              onOpenFolder(item.id);
-            }}
-          />
-        ) : (
-          <TxtFile key={item.id} title={item.name} fileId={item.id} />
-        ),
-      )}
+      {
+        //DISK[itemId]?.listDirectory().map((item) =>
+        //  Folder.isFolder(item) ? (
+        //    <FolderFile
+        //      key={item.id}
+        //      title={item.name}
+        //      onClick={() => {
+        //        onOpenFolder(item.id);
+        //      }}
+        //    />
+        //  ) : (
+        //    <TxtFile key={item.id} title={item.name} fileId={item.id} />
+        // ))
+      }
     </div>
   );
 };
@@ -33,18 +34,19 @@ const TxtFile: React.FC<{
   onClick?(): void;
   fileId: string;
 }> = ({ title, onClick, fileId }) => {
-  const wm = useWindowManagerStore();
+  void fileId;
+  const addWindow = useSetAtom(addWindowAtom);
   const dispatch = useContextMenu();
 
   function handleRightClick() {
-    const item = DISK[fileId] as FSFile;
+    const item = { name: "", content: "" };
 
     const menu = (
       <>
         <ContextMenuItem
           onClick={() => {
-            wm.addWindow(() => (
-              <Window title={item.name} children={item.content} />
+            addWindow((id) => (
+              <Window windowId={id} title={item.name} children={item.content} />
             ));
           }}
         >

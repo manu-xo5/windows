@@ -1,5 +1,8 @@
 import { TASKBAR_HEIGHT } from "@/constants";
-import { useWindowManagerStore } from "../window-manager";
+import { useAtom, useSetAtom } from "jotai";
+import { windowIdsAtom } from "../window-manager/atoms";
+import { WindowId } from "../window/atoms";
+import { useWindowAtoms } from "../window/use-window-atoms";
 
 const TempStartButton = () => {
   return (
@@ -37,8 +40,7 @@ const TempStartButton = () => {
 };
 
 export const Taskbar = () => {
-  const { ids, storeMap } = useWindowManagerStore();
-  const getWindowState = (id: string) => storeMap.get(id)!;
+  const [ids] = useAtom(windowIdsAtom);
 
   return (
     <div
@@ -51,27 +53,35 @@ export const Taskbar = () => {
       <TempStartButton />
 
       {ids.map((id) => (
-        <button
-          style={{
-            viewTransitionName: "taskbar_item_" + id,
-          }}
-          key={id}
-          className="inline-flex"
-          onClick={() => {
-            document.startViewTransition(() => {
-              const winState = getWindowState(id).getState();
-
-              if (winState.state === "minimized") {
-                winState.setState(winState.prevState);
-              } else {
-                winState.setState("minimized");
-              }
-            });
-          }}
-        >
-          <div className="bg-blue-400 inline-block w-6 h-6" />
-        </button>
+        <TaskbarButton windowId={id} />
       ))}
     </div>
   );
 };
+
+function TaskbarButton({ windowId }: { windowId: WindowId }) {
+  const { restoreWinStateAtom, winStateAtom } = useWindowAtoms(windowId);
+  const [winState, setWinState] = useAtom(winStateAtom);
+  const restoreWinState = useSetAtom(restoreWinStateAtom);
+
+  return (
+    <button
+      style={{
+        viewTransitionName: "taskbar_item_" + windowId.id,
+      }}
+      key={windowId.id}
+      className="inline-flex"
+      onClick={() => {
+        document.startViewTransition(() => {
+          if (winState.current === "minimized") {
+            restoreWinState();
+          } else {
+            setWinState("minimized");
+          }
+        });
+      }}
+    >
+      <div className="bg-blue-400 inline-block w-6 h-6" />
+    </button>
+  );
+}

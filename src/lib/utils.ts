@@ -8,9 +8,25 @@ export function cn(...inputs: ClassValue[]) {
 export function generateUniqueId(existingIds: string[]) {
   let id;
   do {
-    id = `id_${Math.random().toString(36).substring(2, 9)}`;
+    id = crypto.randomUUID();
   } while (existingIds.includes(id));
   return id;
 }
 
 export function noop() {}
+
+export async function readFile(file: Blob): Promise<string | null> {
+  const reader = new FileReader();
+  const { promise, resolve } = Promise.withResolvers<string | null>();
+  reader.onload = (ev) => {
+    if (typeof ev.target?.result === "string") resolve(ev.target.result);
+    else resolve(null);
+  };
+  reader.onerror = () => {
+    resolve(null);
+  };
+
+  reader.readAsDataURL(file);
+
+  return promise;
+}

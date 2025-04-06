@@ -1,8 +1,18 @@
 import { FileExplorer } from "@/components/file-explorer";
-import { Window, WindowStoreProvider } from "@/components/window";
-import { useWindowManagerStore } from "./context";
-import { FileIcon, FolderClosedIcon } from "lucide-react";
+import { Window } from "@/components/window";
+import { useAtomValue, useSetAtom } from "jotai";
+import { FileIcon, FolderClosedIcon, HomeIcon } from "lucide-react";
+import { Fragment } from "react";
 import { Taskbar } from "../task-bar";
+import {
+  addWindowAtom,
+  closeWindowAtom,
+  renderFnWeakMap,
+  windowIdsAtom,
+} from "./atoms";
+import { setup } from "./setup";
+
+setup();
 
 const TempIconComp: React.FC<{
   icon: React.ReactNode;
@@ -23,29 +33,38 @@ const TempIconComp: React.FC<{
 };
 
 export function WindowManager() {
-  const ids = useWindowManagerStore((s) => s.ids);
-  const storeMap = useWindowManagerStore((s) => s.storeMap);
-  const renderPropMap = useWindowManagerStore((s) => s.renderPropMap);
-  const addWindow = useWindowManagerStore((s) => s.addWindow);
+  const ids = useAtomValue(windowIdsAtom);
+  const addWindow = useSetAtom(addWindowAtom);
+  const closeWindow = useSetAtom(closeWindowAtom);
 
   return (
     <>
-      {ids.map((id) => (
-        <WindowStoreProvider key={id} store={storeMap.get(id)!}>
-          {renderPropMap.get(id)?.()}
-        </WindowStoreProvider>
-      ))}
+      {ids.map((id) => {
+        const renderProp = renderFnWeakMap.get(id);
+        return <Fragment key={id.id}>{renderProp?.(id)}</Fragment>;
+      })}
       <Taskbar />
+
+      <TempIconComp
+        icon={<HomeIcon size={32} />}
+        title="Close"
+        onClick={() => ids[0] && closeWindow(ids[0])}
+      />
 
       <TempIconComp
         icon={<FileIcon size={32} />}
         title="Blank Window"
-        onClick={() => addWindow(() => <Window title="Untitled Window" />)}
+        onClick={() =>
+          addWindow((windowId) => (
+            <Window windowId={windowId} title="Untitled Window" />
+          ))
+        }
       />
+
       <TempIconComp
         icon={<FolderClosedIcon size={32} />}
         title="Blank Window"
-        onClick={() => addWindow(() => <FileExplorer />)}
+        onClick={() => addWindow((id) => <FileExplorer windowId={id} />)}
       />
     </>
   );

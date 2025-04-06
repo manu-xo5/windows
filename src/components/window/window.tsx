@@ -1,39 +1,44 @@
 import { ContextMenuItem, useContextMenu } from "@/components/context-menu";
+import {
+  closeWindowAtom,
+  getWindowAtoms,
+} from "@/components/window-manager/atoms";
 import { useResizeWindow } from "@/components/window/use-resize-window";
 import { cn } from "@/lib/utils";
+import { useAtom, useSetAtom } from "jotai";
 import { ChevronRightIcon } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { flushSync } from "react-dom";
-import { useWindowManagerStore } from "../window-manager";
-import { useWindowStore } from "./context";
+import type { WindowId } from "./atoms";
 import { TitleBar } from "./title-bar";
 import { useDragWindow } from "./use-drag-window";
 
 type Props = {
+  windowId: WindowId;
   title: string;
   children?: React.ReactNode;
 };
-export function Window({ children, title }: Props) {
+
+export function Window({ children, title, windowId }: Props) {
   const titleNodeRef = useRef<HTMLDivElement>(null);
   const windowNodeRef = useRef<HTMLDivElement>(null);
-  const windowId = useWindowStore((s) => s.id);
-  const state = useWindowStore((s) => s.state);
-
-  const setState = useWindowStore((s) => s.setState);
-  const close = useWindowManagerStore((s) => s.closeWindow);
   const dispatchCtxMenu = useContextMenu();
 
+  const close = useSetAtom(closeWindowAtom);
+  const { winStateAtom } = useMemo(() => getWindowAtoms(windowId), [windowId]);
+  const [{ current: currentState }, setState] = useAtom(winStateAtom);
+
   useDragWindow({
+    windowId: windowId,
     anchorRef: titleNodeRef,
     targetRef: windowNodeRef,
   });
-
   useResizeWindow({ targetRef: windowNodeRef });
 
   useEffect(() => {
     if (!windowNodeRef.current) return;
-    windowNodeRef.current.style.width = "400px";
-    windowNodeRef.current.style.height = "300px";
+    windowNodeRef.current.style.width = "600px";
+    windowNodeRef.current.style.height = "400px";
   }, []);
 
   return (
@@ -43,9 +48,9 @@ export function Window({ children, title }: Props) {
       }}
       className={cn(
         "absolute z-10 flex flex-col",
-        state === "minimized" &&
+        currentState === "minimized" &&
           "!scale-[0.0001%] !top-[unset] !bottom-0 !left-1/2 -translate-x-1/2",
-        state === "maximized" &&
+        currentState === "maximized" &&
           "!top-0 !left-0 !w-screen !h-[calc(100vh-var(--taskbar-height))]",
       )}
       ref={windowNodeRef}
@@ -62,7 +67,7 @@ export function Window({ children, title }: Props) {
         onMaximize={() => {
           document.startViewTransition(() => {
             flushSync(() => {
-              if (state === "normal") {
+              if (currentState === "normal") {
                 setState("maximized");
               } else {
                 setState("normal");

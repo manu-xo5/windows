@@ -23,6 +23,15 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      immer:
+        specifier: ^10.1.1
+        version: 10.1.1
+      jotai:
+        specifier: ^2.12.2
+        version: 2.12.2(@types/react@19.1.0)(react@19.1.0)
+      jotai-scope:
+        specifier: ^0.7.3
+        version: 0.7.3(jotai@2.12.2(@types/react@19.1.0)(react@19.1.0))
       lucide-react:
         specifier: ^0.487.0
         version: 0.487.0(react@19.1.0)
@@ -43,7 +52,7 @@ importers:
         version: 1.2.5
       zustand:
         specifier: ^5.0.3
-        version: 5.0.3(@types/react@19.1.0)(react@19.1.0)
+        version: 5.0.3(@types/react@19.1.0)(immer@10.1.1)(react@19.1.0)
     devDependencies:
       '@eslint/js':
         specifier: ^9.21.0
@@ -1208,6 +1217,9 @@ packages:
     resolution: {integrity: sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==}
     engines: {node: '>= 4'}
 
+  immer@10.1.1:
+    resolution: {integrity: sha512-s2MPrmjovJcoMaHtx6K11Ra7oD05NT97w1IC5zpMkT6Atjr7H8LjaDd81iIxUYpMKSRRNMJE703M1Fhr/TctHw==}
+
   import-fresh@3.3.1:
     resolution: {integrity: sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==}
     engines: {node: '>=6'}
@@ -1234,6 +1246,24 @@ packages:
   jiti@2.4.2:
     resolution: {integrity: sha512-rg9zJN+G4n2nfJl5MW3BMygZX56zKPNVEYYqq7adpmMh4Jn2QNEwhvQlFy6jPVdcod7txZtKHWnyZiA3a0zP7A==}
     hasBin: true
+
+  jotai-scope@0.7.3:
+    resolution: {integrity: sha512-8MSlj62XwWE/AHXU0MKpNjvrl7ZBx38B4p/3474uayljrYIQEHgZDTTjTRZqvPeG/1H+4Owod7l0OTA4ztvA+g==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      jotai: '>=2.9.3'
+
+  jotai@2.12.2:
+    resolution: {integrity: sha512-oN8715y7MkjXlSrpyjlR887TOuc/NLZMs9gvgtfWH/JP47ChwO0lR2ijSwBvPMYyXRAPT+liIAhuBavluKGgtA==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      '@types/react': '>=17.0.0'
+      react: '>=17.0.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      react:
+        optional: true
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -2723,6 +2753,8 @@ snapshots:
 
   ignore@5.3.2: {}
 
+  immer@10.1.1: {}
+
   import-fresh@3.3.1:
     dependencies:
       parent-module: 1.0.1
@@ -2741,6 +2773,15 @@ snapshots:
   isexe@2.0.0: {}
 
   jiti@2.4.2: {}
+
+  jotai-scope@0.7.3(jotai@2.12.2(@types/react@19.1.0)(react@19.1.0)):
+    dependencies:
+      jotai: 2.12.2(@types/react@19.1.0)(react@19.1.0)
+
+  jotai@2.12.2(@types/react@19.1.0)(react@19.1.0):
+    optionalDependencies:
+      '@types/react': 19.1.0
+      react: 19.1.0
 
   js-tokens@4.0.0: {}
 
@@ -3062,7 +3103,8 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zustand@5.0.3(@types/react@19.1.0)(react@19.1.0):
+  zustand@5.0.3(@types/react@19.1.0)(immer@10.1.1)(react@19.1.0):
     optionalDependencies:
       '@types/react': 19.1.0
+      immer: 10.1.1
       react: 19.1.0
