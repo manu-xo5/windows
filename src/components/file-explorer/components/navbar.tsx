@@ -1,6 +1,13 @@
 import { IconButton } from "@/components/ui/icon-button";
+import { useAtom, useAtomValue } from "jotai";
+import { selectedFolderAtomAtom } from "../atoms";
 
 export function Navbar() {
+  const [selectedFolderAtom, selectFolderAtom] = useAtom(
+    selectedFolderAtomAtom,
+  );
+  const folder = useAtomValue(selectedFolderAtom);
+
   return (
     <nav className="bg-accent flex items-center px-1 gap-x-2 p-1 border-b">
       <div className="flex gap-1.5">
@@ -24,7 +31,9 @@ export function Navbar() {
           title="Up a folder"
           iconName="up"
           onClick={() => {
-            console.error("not implemented");
+            if (folder.parent) {
+              selectFolderAtom(folder.parent);
+            }
           }}
         />
 

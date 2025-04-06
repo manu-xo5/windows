@@ -13,6 +13,7 @@ import type { WindowId } from "./atoms";
 import { TitleBar } from "./title-bar";
 import { useDragWindow } from "./use-drag-window";
 import { openMenuAtom } from "../context-menu/atoms";
+import { useWindowAtoms } from "./use-window-atoms";
 
 type Props = {
   windowId: WindowId;
@@ -26,7 +27,7 @@ export function Window({ children, title, windowId }: Props) {
   const openMenu = useSetAtom(openMenuAtom);
 
   const close = useSetAtom(closeWindowAtom);
-  const { winStateAtom } = useMemo(() => getWindowAtoms(windowId), [windowId]);
+  const { winStateAtom } = useWindowAtoms(windowId);
   const [{ current: currentState }, setState] = useAtom(winStateAtom);
 
   useDragWindow({

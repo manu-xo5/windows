@@ -2,6 +2,8 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   ArrowUpIcon,
+  FileImageIcon,
+  FileTextIcon,
   HomeIcon,
   LucideProps,
   RotateCwIcon,
@@ -15,4 +17,7 @@ export const Icons = {
   up: (props: LucideProps) => <ArrowUpIcon size={32} {...props} />,
 
   home: (props: LucideProps) => <HomeIcon size={32} {...props} />,
+  imageFile: (props: LucideProps) => <FileImageIcon size={32} {...props} />,
+
+  textFile: (props: LucideProps) => <FileTextIcon size={32} {...props} />,
 } as const;

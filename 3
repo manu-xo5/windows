@@ -1,0 +1,91 @@
+import { ContextMenuItem } from "@/components/context-menu";
+import { Window } from "@/components/window";
+import { isFolder } from "@/lib/file-system-helper";
+import { AtomFolderChildren } from "@/lib/file-system-types";
+import { useAtomValue, useSetAtom } from "jotai";
+import { FileIcon, FolderClosedIcon } from "lucide-react";
+import { openMenuAtom } from "../context-menu/atoms";
+import { addWindowAtom } from "../window-manager/atoms";
+
+type Props = {
+  children: React.ReactNode;
+};
+
+export const FileView: React.FC<Props> = ({ children }) => {
+  return <div className="grid grid-cols-4 gap-4 p-4">{children}</div>;
+};
+
+type FolderItemProps = {
+  folderChildrenAtom: AtomFolderChildren;
+};
+
+export function FolderItem({ folderChildrenAtom }: FolderItemProps) {
+  const item = useAtomValue(folderChildrenAtom);
+
+  return isFolder(item) ? (
+    <FolderFile key={item.name} title={item.name} />
+  ) : (
+    <TxtFile key={item.id} title={item.name} fileId={item.id} />
+  );
+}
+
+const TxtFile: React.FC<{
+  title: string;
+  onClick?(): void;
+  fileId: string;
+}> = ({ title, onClick, fileId }) => {
+  void fileId;
+  const addWindow = useSetAtom(addWindowAtom);
+  const openMenu = useSetAtom(openMenuAtom);
+
+  function handleRightClick() {
+    const item = { name: "", content: "" };
+
+    const menu = (
+      <>
+        <ContextMenuItem
+          onClick={() => {
+            addWindow((id) => (
+              <Window windowId={id} title={item.name} children={item.content} />
+            ));
+          }}
+        >
+          Open
+        </ContextMenuItem>
+      </>
+    );
+
+    openMenu(() => menu);
+  }
+
+  return (
+    <div className="max-w-14 flex flex-col items-center">
+      <button
+        onDoubleClick={onClick}
+        onContextMenu={(ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          handleRightClick();
+        }}
+      >
+        <FileIcon size={32} />
+        <p>{title}</p>
+      </button>
+    </div>
+  );
+};
+
+const FolderFile: React.FC<{ title: string; onClick?(): void }> = ({
+  title,
+  onClick,
+}) => {
+  return (
+    <button
+      onDoubleClick={onClick}
+      className="max-w-14 flex flex-col items-center"
+    >
+      <FolderClosedIcon size={32} />
+      <p className="line-clamp-2 h-12 text-ellipsis">{title}</p>
+    </button>
+  );
+};

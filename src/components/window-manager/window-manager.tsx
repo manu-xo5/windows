@@ -4,10 +4,13 @@ import { Icons } from "@/components/icons";
 import { Window } from "@/components/window";
 import { useAtomValue, useSetAtom } from "jotai";
 import { FileIcon, FolderClosedIcon } from "lucide-react";
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { openMenuAtom } from "../context-menu/atoms";
 import { Taskbar } from "../task-bar";
 import { addWindowAtom, renderFnWeakMap, windowIdsAtom } from "./atoms";
+import { setup } from "./setup";
+import { WindowId } from "../window/atoms";
+setup();
 
 const TempIconComp: React.FC<{
   icon: React.ReactNode;
@@ -31,6 +34,7 @@ export function WindowManager() {
   const ids = useAtomValue(windowIdsAtom);
   const addWindow = useSetAtom(addWindowAtom);
   const openContextMenu = useSetAtom(openMenuAtom);
+  const [count, setCount] = useState(0);
 
   return (
     <>
@@ -66,6 +70,11 @@ export function WindowManager() {
           icon={<FolderClosedIcon size={32} />}
           title="Blank Window"
           onClick={() => addWindow((id) => <FileExplorer windowId={id} />)}
+        />
+        <TempIconComp
+          icon={<FolderClosedIcon size={32} />}
+          title={"inc " + count}
+          onClick={() => setCount((p) => ++p)}
         />
 
         <Taskbar />

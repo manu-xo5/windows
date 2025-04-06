@@ -1,80 +1,43 @@
-import { ContextMenuItem } from "@/components/context-menu";
-import { Window } from "@/components/window";
-import { FileIcon, FolderClosedIcon } from "lucide-react";
-import { useSetAtom } from "jotai";
-import { addWindowAtom } from "../window-manager/atoms";
-import { openMenuAtom } from "../context-menu/atoms";
+import { isFolder } from "@/lib/file-system-helper";
+import {
+  AtomFolderChildren,
+  FileAtom,
+  FolderAtom,
+} from "@/lib/file-system-types";
+import { useAtomValue, useSetAtom } from "jotai";
+import { FolderClosedIcon } from "lucide-react";
+import { selectedFolderAtomAtom } from "./atoms";
+import { ImageFile } from "./components/image-file";
+import { TxtFile } from "./components/txt-file";
 
 type Props = {
-  itemId: string;
-  onOpenFolder(itemId: "string"): void;
+  children: React.ReactNode;
 };
-export const FileView: React.FC<Props> = ({ itemId, onOpenFolder }) => {
-  return (
-    <div className="grid grid-cols-4 gap-4 p-4">
-      {
-        //DISK[itemId]?.listDirectory().map((item) =>
-        //  Folder.isFolder(item) ? (
-        //    <FolderFile
-        //      key={item.id}
-        //      title={item.name}
-        //      onClick={() => {
-        //        onOpenFolder(item.id);
-        //      }}
-        //    />
-        //  ) : (
-        //    <TxtFile key={item.id} title={item.name} fileId={item.id} />
-        // ))
-      }
-    </div>
+
+export const FileView: React.FC<Props> = ({ children }) => {
+  return <div className="grid grid-cols-4 gap-4 p-4">{children}</div>;
+};
+
+type FolderItemProps = {
+  folderChildrenAtom: AtomFolderChildren;
+};
+
+export function FolderItem({ folderChildrenAtom: itemAtom }: FolderItemProps) {
+  const selectFolderAtom = useSetAtom(selectedFolderAtomAtom);
+  const item = useAtomValue(itemAtom);
+
+  return isFolder(item) ? (
+    <FolderFile
+      key={item.name}
+      title={item.name}
+      onClick={() => selectFolderAtom(itemAtom as FolderAtom)}
+    />
+  ) : item.name.includes(".png") ? (
+    <ImageFile fileAtom={itemAtom as FileAtom} />
+  ) : (
+    <TxtFile fileAtom={itemAtom as FileAtom} />
   );
-};
-
-const TxtFile: React.FC<{
-  title: string;
-  onClick?(): void;
-  fileId: string;
-}> = ({ title, onClick, fileId }) => {
-  void fileId;
-  const addWindow = useSetAtom(addWindowAtom);
-  const openMenu = useSetAtom(openMenuAtom);
-
-  function handleRightClick() {
-    const item = { name: "", content: "" };
-
-    const menu = (
-      <>
-        <ContextMenuItem
-          onClick={() => {
-            addWindow((id) => (
-              <Window windowId={id} title={item.name} children={item.content} />
-            ));
-          }}
-        >
-          Open
-        </ContextMenuItem>
-      </>
-    );
-
-    openMenu(() => menu);
-  }
-
-  return (
-    <div className="max-w-14 flex flex-col items-center">
-      <button
-        onDoubleClick={onClick}
-        onContextMenu={(ev) => {
-          ev.preventDefault();
-          ev.stopPropagation();
-          handleRightClick();
-        }}
-      >
-        <FileIcon size={32} />
-        <p>{title}</p>
-      </button>
-    </div>
-  );
-};
+}
 
 const FolderFile: React.FC<{ title: string; onClick?(): void }> = ({
   title,

@@ -15,6 +15,7 @@ export function generateUniqueId(existingIds: string[]) {
 
 export function noop() {}
 
+// file
 export async function readFile(file: Blob): Promise<string | null> {
   const reader = new FileReader();
   const { promise, resolve } = Promise.withResolvers<string | null>();
@@ -29,4 +30,17 @@ export async function readFile(file: Blob): Promise<string | null> {
   reader.readAsDataURL(file);
 
   return promise;
+}
+
+export async function loadResource(path: string, fileName: string) {
+  return fetch(["/assets", path, fileName].join("/")).then((res) => res.blob());
+}
+//
+
+export async function tryCatch<T, E = Error>(promise: PromiseLike<T> | T) {
+  try {
+    return [null, await promise] as const;
+  } catch (err) {
+    return [err as E, null] as const;
+  }
 }

@@ -1,35 +1,31 @@
-import { PrimitiveAtom } from "jotai";
-import { atom, SetStateAction, WritableAtom } from "jotai";
+import { atom, PrimitiveAtom } from "jotai";
+import {
+  AtomFolderChildren,
+  FileNode,
+  FolderAtom,
+  FolderBase,
+  FolderNode,
+} from "./file-system-types";
 
-export type FolderBase = {
-  name: string;
-  getParent(): FolderAtom;
-  children: FolderAtom[];
-};
-
-export type Folder = {
-  name: string;
-  getParent(): FolderAtom;
-  children: Map<string, FolderAtom>;
-};
-export type FolderAtom = WritableAtom<
-  Folder,
-  [SetStateAction<FolderBase>],
-  void
->;
-
-function createFolderAtom(name: string, parentAtom: FolderAtom) {
-  const baseAtom: PrimitiveAtom<FolderBase> = atom({
-    name,
-    getParent: () => parentAtom,
-    children: [] as FolderBase["children"],
-  });
+export function atomOfFolder(folder: FolderBase) {
+  const baseAtom: PrimitiveAtom<FolderBase> = atom(folder);
 
   const folderAtom: FolderAtom = atom(
-    (get) => ({
-      ...get(baseAtom),
-      children: new Map(),
-    }),
+    (get) => {
+      const entries = get(baseAtom).children.map((childAtom) => {
+        const child = get<FolderNode | FileNode>(childAtom);
+        if (child.type === "folder") {
+          return [child.name, childAtom] as const;
+        } else {
+          return [(child as FileNode).id, childAtom] as const;
+        }
+      });
+
+      return {
+        ...get(baseAtom),
+        children: new Map(entries),
+      };
+    },
     (_get, set, update) => {
       set(baseAtom, update);
     },
@@ -38,52 +34,48 @@ function createFolderAtom(name: string, parentAtom: FolderAtom) {
   return folderAtom;
 }
 
-export const addChildrenAtom = atom(
-  null,
-  (_, set, parentAtom: FolderAtom, name: string) => {
-    const newFolderAtom = createFolderAtom(name, parentAtom);
-
-    set(parentAtom, (prev) => ({
-      ...prev,
-      children: [...prev.children, newFolderAtom],
-    }));
-
-    return newFolderAtom;
-  },
-);
-
-export const createPathAtom = (folder: FolderAtom) => {
+export function atomOfPath(folder: FolderAtom) {
   return atom((get) => {
     const path: string[] = [];
     let i = 0;
-    let currentAtom = folder;
 
+    let currentAtom: FolderAtom | null = folder;
     while (++i < 100) {
-      const current = get(currentAtom);
-      if (current.getParent() === currentAtom) break;
+      const parent: FolderAtom | null = currentAtom && get(currentAtom).parent;
+      if (currentAtom == null || parent == null) break;
 
-      path.unshift(current.name);
-      currentAtom = current.getParent();
+      const name = get(currentAtom).name;
+      path.unshift(name);
+
+      currentAtom = parent;
     }
 
     return path.join("/");
   });
-};
+}
 
-// global atom instances
-const rootBaseFolderAtom = atom<FolderBase>({
-  name: "root",
-  getParent: () => rootFolderAtom,
-  children: [],
-});
-export const rootFolderAtom: FolderAtom = atom(
-  (get) => ({
-    ...get(rootBaseFolderAtom),
-    children: new Map(),
-  }),
-  (_, set, update) => {
-    set(rootBaseFolderAtom, update);
+// action atoms
+export const addChildrenAtom = atom(
+  null,
+  (get, set, parentAtom: FolderAtom, childAtom: AtomFolderChildren) => {
+    const childName = get<FolderNode | FileNode>(childAtom).name;
+    const exists = get(parentAtom).children.has(childName);
+
+    if (exists) {
+      throw Error("EEXIST");
+    }
+
+    set(parentAtom, (prev) => ({
+      ...prev,
+      children: [...prev.children, childAtom],
+    }));
   },
 );
 
-export const selectedFolderAtomAtom = atom<FolderAtom>(rootFolderAtom);
+// global atom instances
+export const rootFolderAtom = atomOfFolder({
+  name: "root",
+  type: "folder",
+  parent: null,
+  children: [],
+});
