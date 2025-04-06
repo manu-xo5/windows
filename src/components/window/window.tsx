@@ -1,4 +1,4 @@
-import { ContextMenuItem, useContextMenu } from "@/components/context-menu";
+import { ContextMenuItem } from "@/components/context-menu";
 import {
   closeWindowAtom,
   getWindowAtoms,
@@ -12,6 +12,7 @@ import { flushSync } from "react-dom";
 import type { WindowId } from "./atoms";
 import { TitleBar } from "./title-bar";
 import { useDragWindow } from "./use-drag-window";
+import { openMenuAtom } from "../context-menu/atoms";
 
 type Props = {
   windowId: WindowId;
@@ -22,7 +23,7 @@ type Props = {
 export function Window({ children, title, windowId }: Props) {
   const titleNodeRef = useRef<HTMLDivElement>(null);
   const windowNodeRef = useRef<HTMLDivElement>(null);
-  const dispatchCtxMenu = useContextMenu();
+  const openMenu = useSetAtom(openMenuAtom);
 
   const close = useSetAtom(closeWindowAtom);
   const { winStateAtom } = useMemo(() => getWindowAtoms(windowId), [windowId]);
@@ -109,10 +110,7 @@ export function Window({ children, title, windowId }: Props) {
             </>
           );
 
-          dispatchCtxMenu({
-            type: "open",
-            renderFn: () => menu,
-          });
+          openMenu(() => menu);
         }}
       >
         {children}

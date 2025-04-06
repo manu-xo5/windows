@@ -1,8 +1,9 @@
-import { ContextMenuItem, useContextMenu } from "@/components/context-menu";
+import { ContextMenuItem } from "@/components/context-menu";
 import { Window } from "@/components/window";
 import { FileIcon, FolderClosedIcon } from "lucide-react";
 import { useSetAtom } from "jotai";
 import { addWindowAtom } from "../window-manager/atoms";
+import { openMenuAtom } from "../context-menu/atoms";
 
 type Props = {
   itemId: string;
@@ -36,7 +37,7 @@ const TxtFile: React.FC<{
 }> = ({ title, onClick, fileId }) => {
   void fileId;
   const addWindow = useSetAtom(addWindowAtom);
-  const dispatch = useContextMenu();
+  const openMenu = useSetAtom(openMenuAtom);
 
   function handleRightClick() {
     const item = { name: "", content: "" };
@@ -55,10 +56,7 @@ const TxtFile: React.FC<{
       </>
     );
 
-    dispatch({
-      type: "open",
-      renderFn: () => menu,
-    });
+    openMenu(() => menu);
   }
 
   return (

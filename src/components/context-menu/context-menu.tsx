@@ -1,54 +1,14 @@
 import { useWindowEvent } from "@/hooks/use-window-event";
 import { cn } from "@/lib/utils";
-import { useCallback, useReducer, useRef } from "react";
+import { useAtomValue, useSetAtom } from "jotai";
+import { useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
-import { ContextMenuContext, useContextMenu } from "./context";
+import { closeMenuAtom, isMenuOpenAtom, renderMenuFnAtom } from "./atoms";
 
-export type State = { open: boolean; renderFn: () => React.ReactNode };
-export type Action =
-  | { type: "open"; renderFn: () => React.ReactNode }
-  | { type: "close" };
-function reducer(state: State, action: Action): State {
-  if (action.type === "open") {
-    return {
-      open: true,
-      renderFn: action.renderFn,
-    };
-  } else if (action.type === "close") {
-    return {
-      open: false,
-      renderFn: () => <></>,
-    };
-  }
-  return state;
-}
-
-export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const [{ open, renderFn }, dispatch] = useReducer(reducer, {
-    open: false,
-    renderFn: () => <></>,
-  });
-
-  return (
-    <ContextMenuContext.Provider value={dispatch}>
-      {children}
-      {createPortal(
-        <ContextMenu dispatch={dispatch} open={open}>
-          {renderFn()}
-        </ContextMenu>,
-        document.getElementById("context-menu")!,
-      )}
-    </ContextMenuContext.Provider>
-  );
-};
-
-export const ContextMenu: React.FC<{
-  open: boolean;
-  dispatch: React.ActionDispatch<[action: Action]>;
-  children: React.ReactNode;
-}> = ({ open, children, dispatch }) => {
+export const ContextMenu: React.FC = () => {
+  const open = useAtomValue(isMenuOpenAtom);
+  const closeMenu = useSetAtom(closeMenuAtom);
+  const { render } = useAtomValue(renderMenuFnAtom);
   const nodeRef = useRef<HTMLDivElement>(null);
   const mouseCoords = useRef({ x: 0, y: 0 });
 
@@ -62,15 +22,16 @@ export const ContextMenu: React.FC<{
       if (ev.target === nodeRef.current) return;
       if (nodeRef.current?.contains(ev.target as HTMLElement)) return;
 
-      dispatch({ type: "close" });
+      closeMenu();
     },
-    [dispatch],
+    [closeMenu],
   );
 
   useWindowEvent("mousedown", handleMouseDown);
 
   return (
-    open && (
+    open &&
+    createPortal(
       <div
         ref={nodeRef}
         style={{
@@ -79,8 +40,9 @@ export const ContextMenu: React.FC<{
         }}
         className="absolute flex flex-col w-fit bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 max-h-(--radix-dropdown-menu-content-available-height) min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border p-1 shadow-md"
       >
-        {children}
-      </div>
+        {render()}
+      </div>,
+      document.getElementById("context-menu")!,
     )
   );
 };
@@ -88,7 +50,7 @@ export const ContextMenu: React.FC<{
 export const ContextMenuItem: React.FC<
   React.ComponentPropsWithoutRef<"button">
 > = ({ className, onClick, ...props }) => {
-  const dispatchCtxMenu = useContextMenu();
+  const closeMenu = useSetAtom(closeMenuAtom);
 
   return (
     <button
@@ -101,7 +63,7 @@ export const ContextMenuItem: React.FC<
         onClick?.(ev);
         if (ev.isDefaultPrevented()) return;
 
-        dispatchCtxMenu({ type: "close" });
+        closeMenu();
       }}
       {...props}
     />
