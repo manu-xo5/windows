@@ -3,6 +3,7 @@ import { USER_NAME } from "@/constants";
 import { useState } from "react";
 import { FileView } from "./file-view";
 import { WindowId } from "../window/atoms";
+import { Navbar } from "./components/navbar";
 
 const defaultLocation = `/users/${USER_NAME}`;
 
@@ -17,15 +18,15 @@ export const FileExplorer: React.FC<Props> = ({
   const [selectedFolderId, setSelectedFileId] = useState("");
 
   return (
-    <Window windowId={windowId} title={"File Explorer " + location}>
-      <div className="h-full">
-        <FileView
-          itemId={selectedFolderId}
-          onOpenFolder={(itemId) => {
-            setSelectedFileId(itemId);
-          }}
-        />
-      </div>
+    <Window windowId={windowId} title="File Explorer">
+      <Navbar />
+
+      <FileView
+        itemId={selectedFolderId}
+        onOpenFolder={(itemId) => {
+          setSelectedFileId(itemId);
+        }}
+      />
     </Window>
   );
 };
